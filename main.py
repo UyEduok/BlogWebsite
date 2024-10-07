@@ -96,6 +96,27 @@ def load_user(user_id):
     return db.get_or_404(User, user_id)
 
 
+# Function to set the first user as Admin
+def ensure_first_user_admin():
+    with app.app_context():
+        # Query to find the user with ID 1
+        first_user = db.session.execute(db.select(User).where(User.id == 1)).scalars().first()
+
+        if first_user:
+            current_role = first_user.role  # Get the current role
+            if current_role != 'Admin':  # Check if the role is not Admin
+                # Update the role to Admin
+                db.session.execute(
+                    db.update(User)
+                    .where(User.id == 1)
+                    .values(role='Admin')
+                )
+                db.session.commit()  # Commit the changes
+
+
+# Convert the first user to an admin
+ensure_first_user_admin()
+
 @app.route('/register', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
@@ -103,6 +124,9 @@ def register():
     if form.validate_on_submit():
         email = form.email.data
         user = db.session.execute(db.select(User).where(User.email == email)).scalar()
+
+        # confirm the first user is an Admin
+        ensure_first_user_admin()
         role = form_create_user.role.data if current_user.is_authenticated and current_user.role == "Admin" else "User"
         if user:
             if current_user.is_authenticated and current_user.role == "Admin":
@@ -122,7 +146,7 @@ def register():
                 email=email,
                 name=form.name.data.title(),
                 password=hash_and_salted_password,
-                role= role
+                role=role
             )
             db.session.add(new_user)
             db.session.commit()
