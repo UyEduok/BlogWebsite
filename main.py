@@ -232,23 +232,11 @@ def show_post(post_id):
     )
 
 
-# Create admin-only decorator
-def admin_only(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        # If id is not 1 then return abort with 403 error
-        if current_user.role != "Admin":
-            return abort(403)
-        # Otherwise continue with the route function
-        return f(*args, **kwargs)
-    return decorated_function
-
-
 def admin_and_sub_admin(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # If id is not 1 then return abort with 403 error
-        if current_user.role != "Admin" or current_user.role != "Sub_admin":
+        if current_user.role != "Admin" and current_user.role != "Sub_admin":
             return abort(403)
         # Otherwise continue with the route function
         return f(*args, **kwargs)
