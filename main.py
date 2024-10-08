@@ -336,17 +336,24 @@ def contact():
         email = form.email.data
         phone = form.phone.data if form.phone.data else "No phone number provided"
         message = f"""
-{form.message.data}\n\n
-Message From:
-    {name}\n
-    {email}\n
-    {phone}
-"""
-        print(name, email, phone, message)
+        <p>{form.message.data}</p><br><br>
+        <strong>Message From:</strong><br>
+        <strong>Name:</strong> {name}<br>
+        <strong>Email:</strong> {email}<br>
+        <strong>Phone:</strong> {phone}
+        """
+
+        send_mail = SendMail()
+        send_mail.send_email(message)
         msg_sent = True
-        SendMail().send_email(message)
-        return redirect(url_for("contact", msg_sent=msg_sent))
-    print(msg_sent)
+        send_mail.respond_to_client(email)
+        return render_template(
+            "contact.html",
+            logged_in=current_user.is_authenticated,
+            current_user=current_user,
+            form=form,
+            msg_sent=msg_sent
+        )
     return render_template(
         "contact.html",
         logged_in=current_user.is_authenticated,

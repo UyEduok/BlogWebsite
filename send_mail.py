@@ -1,8 +1,8 @@
-import smtplib
-import os
 import logging
 from dotenv import load_dotenv
-from email.message import EmailMessage
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 load_dotenv()
 
@@ -13,33 +13,43 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 class SendMail:
     def __init__(self):
         self.EMAIL = os.getenv("EMAIL")
-        self.PASSWORD = os.getenv("PASSWORD")
         self.DESTINATION_EMAIL = os.getenv("DESTINATION_EMAIL")
+        self.SGRID_KEY = os.environ.get('SENDGRID_API_KEY')
 
-    def send_email(self,body):
+    def send_email(self, body):
+
+        message = Mail(
+            from_email=self.EMAIL,
+            to_emails=self.DESTINATION_EMAIL,
+            subject='Contact rom Client',
+            html_content=body)
         try:
-            # Create an EmailMessage object
-            msg = EmailMessage()
-            msg['Subject'] = "Client Enquiry"
-            msg['From'] = self.EMAIL
-            msg['To'] = self.DESTINATION_EMAIL
-            msg.set_content(body)
-
-            # Send the email
-            with smtplib.SMTP("smtp.gmail.com") as connection:
-                connection.starttls()
-                connection.login(user=self.EMAIL, password=self.PASSWORD)
-                connection.send_message(msg)
-
-            logging.info("Email sent successfully!")
-        except smtplib.SMTPAuthenticationError:
-            logging.error("Authentication failed. Check your email and app password.")
-        except smtplib.SMTPConnectError:
-            logging.error("Failed to connect to the SMTP server. Check your network and SMTP settings.")
-        except smtplib.SMTPException as e:
-            logging.error(f"An SMTP error occurred: {e}")
-        except TimeoutError:
-            logging.error("Connection timed out. Check your network connection.")
+            sg = SendGridAPIClient(self.SGRID_KEY)
+            response = sg.send(message)
+            logging.info(f"Email sent! Status code: {response.status_code}")
+            logging.debug(f"Response body: {response.body}")
+            logging.debug(f"Response headers: {response.headers}")
         except Exception as e:
-            logging.error(f"An unexpected error occurred: {e}")
+            logging.error(f"An error occurred: {str(e)}")
 
+    def respond_to_client(self, client_email):
+        body = f"""
+        <p>Thank you for contacting <b>Uy's blog</b>. A collection of Lovely Posts.</p><hr>
+        <p>We will respond to your enquiries shortly</p><br>
+        <strong>Thanks</strong>
+        <strong>Uyuho Eduok<br>
+        <strong>Full Stack Developer</strong>
+        """
+        message = Mail(
+            from_email=self.EMAIL,
+            to_emails=client_email,
+            subject='Enquiries from Users',
+            html_content=body)
+        try:
+            sg = SendGridAPIClient(self.SGRID_KEY)
+            response = sg.send(message)
+            logging.info(f"Email sent! Status code: {response.status_code}")
+            logging.debug(f"Response body: {response.body}")
+            logging.debug(f"Response headers: {response.headers}")
+        except Exception as e:
+            logging.error(f"An error occurred: {str(e)}")

@@ -11,16 +11,18 @@
         <div class="page-heading">
           {% if msg_sent %}
           <h1>Successfully sent your message</h1>
+          <span class="subheading">Your enquiry will be attended to shortly.</span>
           {% else %}
           <h1>Contact Me</h1>
-          {% endif %}
           <span class="subheading">Have questions? I have answers.</span>
+          {% endif %}
         </div>
       </div>
     </div>
   </div>
 </header>
 <!-- Main Content-->
+{% if not msg_sent %}
 <main class="mb-4">
   <div class="container px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
@@ -36,5 +38,6 @@
     </div>
   </div>
 </main>
+{% endif %}
 
 {% include "footer.html" %} {% endblock %}
