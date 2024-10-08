@@ -8,8 +8,9 @@ from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
-from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, CreateUserForm
+from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, CreateUserForm, ContactForm
 from flask_gravatar import Gravatar
+from send_mail import SendMail
 from dotenv import load_dotenv
 import os
 
@@ -315,15 +316,6 @@ def about():
     )
 
 
-@app.route("/contact")
-def contact():
-    return render_template(
-        "contact.html",
-        logged_in=current_user.is_authenticated,
-        current_user=current_user
-    )
-
-
 @app.route('/delete_comment/<int:comment_id>', methods=['DELETE'])
 @admin_and_sub_admin
 def delete_comment(comment_id):
@@ -333,6 +325,35 @@ def delete_comment(comment_id):
         db.session.commit()
         return '', 204  # No Content
     return '', 404  # Not Found
+
+
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    form = ContactForm()
+    msg_sent = False
+    if form.validate_on_submit():
+        name = form.name.data
+        email = form.email.data
+        phone = form.phone.data if form.phone.data else "No phone number provided"
+        message = f"""
+{form.message.data}\n\n
+Message From:
+    {name}\n
+    {email}\n
+    {phone}
+"""
+        print(name, email, phone, message)
+        msg_sent = True
+        SendMail().send_email(message)
+        return redirect(url_for("contact", msg_sent=msg_sent))
+    print(msg_sent)
+    return render_template(
+        "contact.html",
+        logged_in=current_user.is_authenticated,
+        current_user=current_user,
+        form=form,
+        msg_sent=msg_sent
+    )
 
 
 if __name__ == "__main__":
