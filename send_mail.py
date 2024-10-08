@@ -36,8 +36,8 @@ class SendMail:
         body = f"""
         <p>Thank you for contacting <b>Uy's blog</b>. A collection of Lovely Posts.</p><hr>
         <p>We will respond to your enquiries shortly</p><br>
-        <strong>Thanks</strong>
-        <strong>Uyuho Eduok<br>
+        <strong>Thanks</strong><br>
+        <strong>Uyuho Eduok</strong><br>
         <strong>Full Stack Developer</strong>
         """
         message = Mail(
