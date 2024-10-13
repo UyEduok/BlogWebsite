@@ -12,7 +12,7 @@ from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, CreateUs
 from flask_gravatar import Gravatar
 from send_mail import SendMail
 from dotenv import load_dotenv
-import os
+import os, datetime
 
 app = Flask(__name__)
 load_dotenv()
@@ -363,5 +363,11 @@ def contact():
     )
 
 
+# Context processor to inject current year into all templates
+@app.context_processor
+def inject_current_year():
+    return {'current_year': datetime.datetime.now().year}
+
+
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
